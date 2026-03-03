@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Ciencia de la Cursiva: Informe Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Noto+Sans:wght@300;400;600;700&display=swap');
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+        .font-sans {
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        /* Chart Container Specifics */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        /* Animation utilities */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stroke-demo {
+            transition: all 0.3s ease;
+        }
+        .stroke-demo:hover {
+            transform: scale(1.05);
+            background-color: #f0f9ff;
+        }
+    </style>
+    <!-- Chosen Palette: "Ink & Parchment" - Warm parchment background (#FDFBF7), Deep Ink Blue (#1E3A8A) for primary text/headers, Slate Grey (#64748B) for secondary text, and Soft Gold/Amber (#D97706) for highlights. This evokes a feeling of classic writing and academic study. -->
+    
+    <!-- Application Structure Plan: 
+         Designed as a "Cognitive Journey" Dashboard. 
+         1. Header: Emotional hook and title.
+         2. Navigation: Segmented control to toggle between 4 core views without scrolling, keeping the user focused on specific domains.
+            - View A: Neurociencia (The Hardware) - Focus on brain areas and circuits.
+            - View B: Lectoescritura (The Process) - Interactive comparison of letter forms and word unity.
+            - View C: Datos & Comparativa (The Evidence) - Radar chart comparing methods.
+            - View D: Impacto Humano (The Result) - Memory, Attention, Culture.
+         3. Dynamic Content Area: Changes based on selection, using JS to swap visibility.
+         4. Footer: Summary and Call to Action.
+         Rationale: The report covers distinct but related areas (biology, mechanics, data, culture). A tabbed dashboard approach prevents information overload and allows the user to "study" one aspect at a time, facilitating synthesis.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Comparison Table (Report Sec 5) -> Radar Chart (Chart.js). Goal: Compare. Method: Radar chart showing the 4 dimensions (Motor, Speed, Retention, Prevention) across the 3 modes (Cursive, Script, Digital). Allows instant visual assessment of Cursive's superiority in cognitive areas.
+         2. Letter Reversal (Report Sec 3.2) -> Interactive CSS "Cards". Goal: Inform/Change. Method: Visual cards showing 'b' vs 'd' in script vs cursive with description of the stroke path. No SVG used, utilizing CSS borders and font styling.
+         3. Word Unit (Report Sec 3.1) -> Interactive Text Block. Goal: Inform. Method: A toggle showing a sentence in Script (broken) vs Cursive (linked) to demonstrate the "Semantic Unit".
+         4. Brain Circuit (Report Sec 2.1) -> Process Flow Diagram. Goal: Organize. Method: HTML Flexbox layout with arrow entities to show the flow from Exner Area -> Motor -> Feedback.
+         Confirming: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-[#FDFBF7] text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="w-full bg-white border-b border-slate-200 shadow-sm py-6 px-4 md:px-8">
+        <div class="max-w-5xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-cursive text-blue-900 mb-2">La Escritura como Tecnología del Pensamiento</h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                Un análisis interactivo sobre los beneficios neurocognitivos de la letra cursiva en la era digital.
+                Basado en evidencia científica sobre el desarrollo cerebral y la alfabetización.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Navigation / Controls -->
+    <nav class="sticky top-0 z-50 bg-[#FDFBF7]/95 backdrop-blur-sm py-4 border-b border-slate-200">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4" id="nav-container">
+                <button onclick="switchTab('neuro')" class="nav-btn px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-blue-900 text-white shadow-md hover:shadow-lg" id="btn-neuro">
+                    🧠 Neurociencia
+                </button>
+                <button onclick="switchTab('literacy')" class="nav-btn px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-white text-slate-600 border border-slate-300 hover:bg-blue-50" id="btn-literacy">
+                    ✍️ Lectoescritura
+                </button>
+                <button onclick="switchTab('data')" class="nav-btn px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-white text-slate-600 border border-slate-300 hover:bg-blue-50" id="btn-data">
+                    📊 Datos Comparativos
+                </button>
+                <button onclick="switchTab('cognition')" class="nav-btn px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 bg-white text-slate-600 border border-slate-300 hover:bg-blue-50" id="btn-cognition">
+                    💡 Cognición y Cultura
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 py-8 relative">
+
+        <!-- VIEW 1: NEUROSCIENCE -->
+        <section id="view-neuro" class="view-section fade-in">
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-sm border-l-4 border-blue-900">
+                <h2 class="text-2xl font-bold text-blue-900 mb-3">El Cerebro en Movimiento</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    La escritura cursiva no es solo una habilidad manual; es una <strong>sinfonía neuronal</strong>. 
+                    A diferencia del teclado, donde el movimiento es repetitivo, o la letra de molde que desconecta los caracteres, 
+                    la cursiva activa circuitos específicos relacionados con la planificación motora fina y la integración sensoriomotora.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <!-- Concept Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Área de Exner</h3>
+                    <div class="text-sm bg-blue-50 p-3 rounded mb-4 text-blue-800">
+                        <strong>📍 Centro de Planificación</strong>
+                    </div>
+                    <p class="text-slate-600 mb-4">
+                        Al escribir en cursiva, se activa intensamente el Área de Exner. Esta región es responsable de traducir 
+                        los pensamientos abstractos en movimientos físicos precisos. Cada letra tiene una "huella motora" única 
+                        que el cerebro debe planificar antes de ejecutar.
+                    </p>
+                    <div class="text-center text-4xl mt-4">🧠 ➡️ ✍️</div>
+                </div>
+
+                <!-- Concept Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow hover:shadow-md transition-shadow">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Codificación Háptica</h3>
+                    <div class="text-sm bg-amber-50 p-3 rounded mb-4 text-amber-800">
+                        <strong>✋ Memoria a través del Tacto</strong>
+                    </div>
+                    <p class="text-slate-600 mb-4">
+                        El movimiento físico de la mano ayuda a "dibujar" la letra en la memoria a largo plazo. 
+                        La resistencia del papel y la fluidez del trazo crean un registro multisensorial que fortalece 
+                        la retención de lo aprendido.
+                    </p>
+                    <div class="text-center text-4xl mt-4">🖐️ + 👁️ = 🧠</div>
+                </div>
+            </div>
+
+            <!-- Flow Diagram -->
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h3 class="text-lg font-bold text-center mb-6">El Circuito de la Escritura Cursiva</h3>
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+                    <div class="flex-1 p-4 bg-white rounded shadow-sm">
+                        <div class="text-3xl mb-2">💭</div>
+                        <div class="font-bold">Idea Abstracta</div>
+                        <div class="text-xs text-slate-500">Generación del mensaje</div>
+                    </div>
+                    <div class="text-2xl text-slate-400">⬇️</div>
+                    <div class="flex-1 p-4 bg-blue-100 rounded shadow-sm border border-blue-200">
+                        <div class="text-3xl mb-2">⚙️</div>
+                        <div class="font-bold text-blue-900">Planificación Motora</div>
+                        <div class="text-xs text-blue-800">Área de Exner: Define trayectoria única</div>
+                    </div>
+                    <div class="text-2xl text-slate-400">⬇️</div>
+                    <div class="flex-1 p-4 bg-white rounded shadow-sm">
+                        <div class="text-3xl mb-2">✍️</div>
+                        <div class="font-bold">Ejecución Fluida</div>
+                        <div class="text-xs text-slate-500">Integración Sensoriomotora</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: LITERACY -->
+        <section id="view-literacy" class="view-section hidden fade-in">
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-sm border-l-4 border-amber-500">
+                <h2 class="text-2xl font-bold text-slate-800 mb-3">Impacto en la Lectoescritura</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    La cursiva no es solo estética; es una herramienta funcional para la alfabetización. 
+                    Resuelve problemas críticos como la confusión de letras y ayuda al cerebro a procesar palabras completas.
+                </p>
+            </div>
+
+            <!-- Letter Reversal Interactive Demo -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-bold mb-4 text-blue-900">El Problema de la Reversión (Dislexia)</h3>
+                    <p class="text-sm text-slate-600 mb-4">
+                        En letra de molde (script), 'b' y 'd' son formas idénticas rotadas. Esto causa confusión.
+                        Pasa el cursor (o toca) las tarjetas para ver el análisis.
+                    </p>
+                    <div class="flex justify-around items-center gap-4">
+                        <div class="stroke-demo w-32 h-32 bg-slate-50 border-2 border-slate-200 rounded-lg flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden">
+                            <span class="text-6xl font-sans text-slate-800 group-hover:opacity-20 transition-opacity">b vs d</span>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2 text-center text-xs font-bold text-red-600">
+                                Formas idénticas (espejo).<br>Alta confusión.
+                            </div>
+                        </div>
+                        <div class="text-2xl text-slate-300">➜</div>
+                        <div class="stroke-demo w-32 h-32 bg-blue-50 border-2 border-blue-200 rounded-lg flex flex-col items-center justify-center cursor-pointer group relative overflow-hidden">
+                            <span class="text-6xl font-cursive text-blue-900 group-hover:opacity-20 transition-opacity">b vs d</span>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2 text-center text-xs font-bold text-blue-800">
+                                Trayectorias únicas.<br>'b' sube, 'd' hace óvalo.<br>Baja confusión.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Word Unit Demo -->
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-bold mb-4 text-blue-900">La Palabra como Unidad Semántica</h3>
+                    <p class="text-sm text-slate-600 mb-4">
+                        Utiliza el interruptor para ver cómo el cerebro percibe la palabra en cada estilo.
+                        La cursiva une las letras, facilitando la comprensión del "todo".
+                    </p>
+                    
+                    <div class="flex items-center justify-center mb-6 space-x-4">
+                        <span class="text-sm font-bold text-slate-500">Script (Molde)</span>
+                        <button id="toggle-word-btn" onclick="toggleWordMode()" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none bg-slate-300">
+                            <span id="toggle-knob" class="translate-x-1 inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+                        </button>
+                        <span class="text-sm font-bold text-blue-900">Cursiva</span>
+                    </div>
+
+                    <div id="word-display-container" class="h-32 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-lg transition-all duration-500">
+                        <!-- Content injected by JS -->
+                        <div id="word-content" class="text-center">
+                            <!-- Initial State -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: DATA COMPARISON -->
+        <section id="view-data" class="view-section hidden fade-in">
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-sm border-l-4 border-slate-600">
+                <h2 class="text-2xl font-bold text-slate-800 mb-3">Comparativa Técnica de Métodos</h2>
+                <p class="text-slate-700">
+                    Análisis comparativo entre Cursiva, Script (Molde) y Escritura Digital basado en cuatro dimensiones clave:
+                    Coordinación Motora, Velocidad de Pensamiento, Retención de Datos y Prevención de Confusión.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Chart Section -->
+                <div class="md:col-span-2 bg-white p-4 rounded-xl shadow-sm">
+                    <h3 class="text-lg font-bold text-center mb-2 text-slate-700">Radar de Eficiencia Cognitiva</h3>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-slate-500 mt-2">
+                        *Escala 1-10 basada en la tabla del informe (Alta/Media/Baja).
+                    </p>
+                </div>
+
+                <!-- Legend / Key Stats -->
+                <div class="flex flex-col gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-800">
+                        <h4 class="font-bold text-blue-900">Cursiva</h4>
+                        <ul class="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
+                            <li>Coordinación: <strong>Alta</strong></li>
+                            <li>Velocidad: <strong>Sincronizada</strong></li>
+                            <li>Retención: <strong>Máxima</strong></li>
+                            <li>Prevención: <strong>Muy Alta</strong></li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-slate-400">
+                        <h4 class="font-bold text-slate-700">Script (Molde)</h4>
+                        <ul class="text-sm text-slate-600 mt-2 space-y-1 list-disc list-inside">
+                            <li>Coordinación: <strong>Media</strong></li>
+                            <li>Velocidad: <strong>Lenta</strong></li>
+                            <li>Retención: <strong>Alta</strong></li>
+                            <li>Prevención: <strong>Baja</strong></li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                        <h4 class="font-bold text-red-900">Digital</h4>
+                        <ul class="text-sm text-red-800 mt-2 space-y-1 list-disc list-inside">
+                            <li>Coordinación: <strong>Baja</strong></li>
+                            <li>Velocidad: <strong>Mecánica</strong></li>
+                            <li>Retención: <strong>Baja</strong></li>
+                            <li>Prevención: <strong>Nula</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: COGNITION & CULTURE -->
+        <section id="view-cognition" class="view-section hidden fade-in">
+            <div class="mb-8 p-6 bg-white rounded-xl shadow-sm border-l-4 border-green-600">
+                <h2 class="text-2xl font-bold text-slate-800 mb-3">Beneficios en la Cognición y Cultura</h2>
+                <p class="text-slate-700">
+                    Más allá de la escuela, la cursiva impacta en funciones ejecutivas superiores y conecta al individuo 
+                    con su identidad y patrimonio histórico.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Memory Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow border-t-4 border-blue-500">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Memoria y Síntesis</h3>
+                    <p class="text-sm text-slate-600">
+                        Estudios demuestran que tomar notas en cursiva genera mayor actividad neuronal. 
+                        El esfuerzo de conectar letras obliga a <strong>sintetizar</strong> la información en lugar de transcribirla mecánicamente.
+                    </p>
+                </div>
+
+                <!-- Discipline Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow border-t-4 border-green-500">
+                    <div class="text-4xl mb-4">🧘</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Atención Plena</h3>
+                    <p class="text-sm text-slate-600">
+                        Es un entrenamiento atencional que requiere:
+                        <br>1. <strong>Control de impulsos</strong>.
+                        <br>2. <strong>Propiocepción</strong>.
+                        <br>3. <strong>Paciencia</strong> y gratificación postergada.
+                    </p>
+                </div>
+
+                <!-- Culture Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-shadow border-t-4 border-amber-500">
+                    <div class="text-4xl mb-4">📜</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Identidad y Legado</h3>
+                    <p class="text-sm text-slate-600">
+                        Permite el acceso a fuentes primarias (historia, cartas antiguas). 
+                        Es la base de la <strong>firma personal</strong>, un elemento irremplazable de la identidad civil.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300 py-8 mt-auto">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <h3 class="text-xl font-semibold text-white mb-2">Conclusión</h3>
+            <p class="max-w-3xl mx-auto mb-6">
+                La cursiva no es una tecnología obsoleta, es una <strong>tecnología del pensamiento</strong>. 
+                Su enseñanza sistemática se recomienda a partir de los 6-7 años para maximizar el desarrollo cognitivo profundo.
+            </p>
+            <div class="text-sm text-slate-500 border-t border-slate-700 pt-4">
+                Basado en el Informe Técnico sobre Beneficios Cognitivos y Pedagógicos de la Letra Cursiva.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Management
+        const state = {
+            currentView: 'neuro',
+            wordMode: 'script' // 'script' or 'cursive'
+        };
+
+        // Navigation Logic
+        function switchTab(viewId) {
+            state.currentView = viewId;
+            
+            // Hide all sections
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Show selected section
+            const activeSection = document.getElementById(`view-${viewId}`);
+            activeSection.classList.remove('hidden');
+
+            // Trigger animation
+            activeSection.classList.remove('fade-in');
+            void activeSection.offsetWidth; // Trigger reflow
+            activeSection.classList.add('fade-in');
+
+            // Update Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-900', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white', 'text-slate-600');
+            });
+            const activeBtn = document.getElementById(`btn-${viewId}`);
+            activeBtn.classList.remove('bg-white', 'text-slate-600');
+            activeBtn.classList.add('bg-blue-900', 'text-white', 'shadow-md');
+
+            // Special handling for Data view to resize chart if needed
+            if(viewId === 'data' && window.comparisonChartInstance) {
+                window.comparisonChartInstance.resize();
+            }
+        }
+
+        // Feature: Word Unit Toggle (Script vs Cursive)
+        function toggleWordMode() {
+            const btn = document.getElementById('toggle-word-btn');
+            const knob = document.getElementById('toggle-knob');
+            
+            if (state.wordMode === 'script') {
+                state.wordMode = 'cursive';
+                btn.classList.remove('bg-slate-300');
+                btn.classList.add('bg-blue-900');
+                knob.classList.add('translate-x-6');
+                knob.classList.remove('translate-x-1');
+            } else {
+                state.wordMode = 'script';
+                btn.classList.add('bg-slate-300');
+                btn.classList.remove('bg-blue-900');
+                knob.classList.remove('translate-x-6');
+                knob.classList.add('translate-x-1');
+            }
+            renderWord();
+        }
+
+        function renderWord() {
+            const container = document.getElementById('word-content');
+            if (state.wordMode === 'script') {
+                container.innerHTML = `
+                    <div class="flex gap-2">
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">p</span>
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">e</span>
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">n</span>
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">s</span>
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">a</span>
+                        <span class="text-4xl font-sans bg-slate-200 px-2 py-1 rounded shadow-sm">r</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Letras aisladas. Procesamiento fragmentado.</p>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="text-6xl font-cursive text-blue-900 tracking-wide">
+                        pensar
+                    </div>
+                    <p class="text-xs text-blue-800 mt-2 font-semibold">Flujo continuo. Unidad de significado.</p>
+                `;
+            }
+        }
+
+        // Initialize Chart.js Radar Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial render of word
+            renderWord();
+
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            // Data Translation:
+            // High/Max/Very High = 9-10
+            // Medium = 5-6
+            // Low/Null = 1-2
+            
+            const data = {
+                labels: [
+                    'Coordinación Motora', 
+                    'Velocidad de Pensamiento', 
+                    'Retención de Datos', 
+                    'Prevención Confusión'
+                ],
+                datasets: [
+                    {
+                        label: 'Cursiva',
+                        data: [9, 10, 10, 9], // Alta, Sincronizada, Maxima, Muy Alta
+                        fill: true,
+                        backgroundColor: 'rgba(30, 58, 138, 0.2)', // Blue 900
+                        borderColor: 'rgb(30, 58, 138)',
+                        pointBackgroundColor: 'rgb(30, 58, 138)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(30, 58, 138)'
+                    },
+                    {
+                        label: 'Script (Molde)',
+                        data: [5, 4, 7, 3], // Media, Lenta, Alta, Baja
+                        fill: true,
+                        backgroundColor: 'rgba(100, 116, 139, 0.2)', // Slate 500
+                        borderColor: 'rgb(100, 116, 139)',
+                        pointBackgroundColor: 'rgb(100, 116, 139)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(100, 116, 139)'
+                    },
+                    {
+                        label: 'Digital',
+                        data: [2, 3, 2, 0], // Baja, Mecanica, Baja, Nula
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)', // Red 500
+                        borderColor: 'rgb(239, 68, 68)',
+                        pointBackgroundColor: 'rgb(239, 68, 68)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(239, 68, 68)'
+                    }
+                ]
+            };
+
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: '#e2e8f0'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Noto Sans', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: "'Noto Sans', sans-serif"
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            window.comparisonChartInstance = new Chart(ctx, config);
+        });
+    </script>
+</body>
+</html>
